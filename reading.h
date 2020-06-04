@@ -31,7 +31,7 @@ List<place>* read_file(ifstream& input_file)
 				{
 					if (check_name(list_s, name))
 					{
-						place new_place(name);
+						place new_place(name);// Source pushing in front of List and becoming root
 						if (name == "S")
 						{
 							list_s->push_front(&new_place);
@@ -39,7 +39,7 @@ List<place>* read_file(ifstream& input_file)
 						}
 						else
 						{
-							if (list_s->Get_Last()->value.name == "T")
+							if (list_s->Get_Last()->value.name == "T")//if element T (sink) already exist, new element pushing before last element, and sink will be still on last position
 							{
 								list_s->push_pre_back(&new_place);
 								i == 0 ? save1 = list_s->Get_Last()->prev : save2 = list_s->Get_Last()->prev;
@@ -67,13 +67,13 @@ List<place>* read_file(ifstream& input_file)
 			}
 		}
 		input_file >> saving;
-		save1->value.push_back_edge(&save1->value, &save2->value, saving);
+		save1->value.push_back_edge(&save1->value, &save2->value, saving);//pushing edge to lists of edges
 		input_file.get(buf);
 		name.clear();
 	}
 	try
 	{
-		find_place_pos("S", list_s);
+		find_place_pos("S", list_s);//checking existence of source
 	}
 	catch (invalid_argument exception)
 	{
@@ -81,7 +81,7 @@ List<place>* read_file(ifstream& input_file)
 	}
 	try
 	{
-		find_place_pos("T", list_s);
+		find_place_pos("T", list_s);//checking existence of sink
 	}
 	catch (invalid_argument exception)
 	{
