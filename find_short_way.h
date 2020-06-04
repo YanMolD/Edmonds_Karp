@@ -31,58 +31,46 @@ bool check_name(List<place>* places, string name)
 	return true;
 }
 
-int count_edges(List<place>* list_p)
-{
-	Node<place>* buf = list_p->Get_Root();
-	int counter = 0;
-	while (buf != NULL)
-	{
-		counter += buf->value.edges_from->size_t();
-		buf = buf->next;
-	}
-	return counter;
-}
-
 int** fill_main_matrix(List<place>* list_p)
 {
-	int buffer = list_p->size_t();
-	int** matrix = new int* [buffer];
-	for (int i = 0; i < buffer; i++)
+	int** matrix = new int* [list_p->size_t()];//matrix initialization
+	for (int i = 0; i < list_p->size_t(); i++)
 		matrix[i] = new int[list_p->size_t()];
-	for (int i = 0; i < buffer; i++)
+	for (int i = 0; i < list_p->size_t(); i++)//filling of matrix
 		for (int j = 0; j < list_p->size_t(); j++)
 			matrix[i][j] = 0;
 	int save_pos = 0;
-	for (int i = 1; i < buffer; i++)
+	place::edge buffer_edge;
+	for (int i = 1; i < list_p->size_t(); i++)
 	{
 		for (int j = 0; j < list_p->size_t(); j++)
 		{
-			if (i == 1)
+			if (i == 1) //filling all ways with 1 edge from source
 				for (int l = 0; l < list_p->Get_Root()->value.edges_from->size_t(); l++)
-					matrix[i][find_place_pos(list_p->Get_Root()->value.edges_from->at(l).to->name, list_p)] = list_p->Get_Root()->value.edges_from->at(l).value;
-			else
+				{
+					buffer_edge = list_p->Get_Root()->value.edges_from->at(l);//edge from root
+					matrix[i][find_place_pos(buffer_edge.to->name, list_p)] = buffer_edge.value;
+				}
+			else// filling all other ways
 			{
 				if (matrix[i - 1][j] != 0)
 				{
 					for (int l = 0; l < list_p->at(j).edges_from->size_t(); l++)
 					{
+						buffer_edge = list_p->at(j).edges_from->at(l);
 						if (list_p->at(j).edges_from->at(l).available != 0)
 						{
-							save_pos = find_place_pos(list_p->at(j).edges_from->at(l).to->name, list_p);
-							matrix[i][save_pos] =
-								(matrix[i][save_pos] == 0 ?
-									matrix[i - 1][j] + list_p->at(j).edges_from->at(l).value :
-									(matrix[i][save_pos] > matrix[i - 1][j] + list_p->at(j).edges_from->at(l).value ?
-										matrix[i - 1][j] + list_p->at(j).edges_from->at(l).value :
-										matrix[i][save_pos]));
+							save_pos = find_place_pos(buffer_edge.to->name, list_p);//saving number of node (which current edge directed to)
+							if (matrix[i][save_pos] == 0)
+								matrix[i][save_pos] = matrix[i - 1][j] + buffer_edge.value;
+							else
+								if (matrix[i][save_pos] > matrix[i - 1][j] + buffer_edge.value)
+									matrix[i][save_pos] = matrix[i - 1][j] + buffer_edge.value;
 						}
 					}
 				}
 			}
 		}
-		/*for (int j = 0; j < list_p->size_t(); j++)
-			cout << matrix[i][j] << "    ";
-		cout << endl;*/
 	}
 
 	return matrix;
@@ -90,32 +78,34 @@ int** fill_main_matrix(List<place>* list_p)
 
 void recreate_way(List<place>* list_p, int** matrix)
 {
-	int f = list_p->size_t() - 1;
+	int Last_elem_pos = list_p->size_t() - 1;
 	int aog_buf = list_p->size_t();
-	int min_way_value = matrix[aog_buf - 1][f];
 	int amount_of_edges = 0;
-	for (int i = 0; i < aog_buf; i++)
+	for (int i = 0; i < aog_buf; i++)// finding shortest way in matrix
 	{
-		if (matrix[i][f] != 0)
+		if (matrix[i][Last_elem_pos] != 0)
 		{
 			amount_of_edges = i;
 			break;
 		}
 	}
 	List<place>* List_of_p_way = new List<place>();
-	List_of_p_way->push_front(&list_p->at(f));
+	List_of_p_way->push_front(&list_p->at(Last_elem_pos));
+	place::edge buffer_edge;
+	int save_pos;
 	while (amount_of_edges != 0)
 	{
 		for (int i = 0; i < List_of_p_way->Get_Root()->value.edges_to->size_t(); i++)
 		{
 			if (List_of_p_way->Get_Root()->value.edges_to->at(i).available != 0)
 			{
-				if (matrix[amount_of_edges][f] - List_of_p_way->Get_Root()->value.edges_to->at(i).value ==
-					matrix[amount_of_edges - 1][find_place_pos(List_of_p_way->Get_Root()->value.edges_to->at(i).from->name, list_p)])
+				buffer_edge = List_of_p_way->Get_Root()->value.edges_to->at(i);
+				save_pos = find_place_pos(buffer_edge.from->name, list_p);
+				if (matrix[amount_of_edges][Last_elem_pos] - buffer_edge.value == matrix[amount_of_edges - 1][save_pos])
 				{
 					amount_of_edges--;
-					f = find_place_pos(List_of_p_way->Get_Root()->value.edges_to->at(i).from->name, list_p);
-					List_of_p_way->push_front(&list_p->at(f));
+					Last_elem_pos = save_pos;
+					List_of_p_way->push_front(&list_p->at(Last_elem_pos));
 					break;
 				}
 			}
@@ -124,7 +114,7 @@ void recreate_way(List<place>* list_p, int** matrix)
 	Node<place>* buf = List_of_p_way->Get_Root();
 	Node<place::edge>* buf_edge;
 	int min_flow = 100;
-	while (buf->next != NULL)
+	while (buf->next != NULL)//finding minimal edge
 	{
 		buf_edge = buf->value.edges_from->Get_Root();
 		while (buf_edge->value.to->name != buf->next->value.name)
@@ -134,7 +124,7 @@ void recreate_way(List<place>* list_p, int** matrix)
 		buf = buf->next;
 	}
 	buf = List_of_p_way->Get_Root();
-	while (buf->next != NULL)
+	while (buf->next != NULL) //filling all edges with minimal edge size
 	{
 		buf_edge = buf->value.edges_from->Get_Root();
 		while (buf_edge->value.to->name != buf->next->value.name)
