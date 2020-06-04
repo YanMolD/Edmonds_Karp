@@ -75,6 +75,8 @@ List<place>* read_file(ifstream& input_file)
 			}
 		}
 		input_file >> saving;
+		if (saving >= 0)
+			throw invalid_argument("Incorrect data in file");
 		save1->value.push_back_edge(&save1->value, &save2->value, saving);//pushing edge to lists of edges
 		input_file.get(buf);
 		name.clear();
@@ -95,5 +97,16 @@ List<place>* read_file(ifstream& input_file)
 	{
 		throw invalid_argument("In this net doesn't exist sink");
 	}
+	int** matrix = fill_main_matrix(list_s);
+	bool check_ways = 0;
+	for (int i = 0; i < list_s->size_t() - 1; i++)
+	{
+		if (matrix[list_s->size_t() - 1][i] != 0)
+			throw invalid_argument("In this net exist a loop");
+		if (matrix[i][list_s->size_t() - 1] != 0)
+			check_ways = 1;
+	}
+	if (check_ways)
+		throw invalid_argument("In this net doesn't exist way from source to sink");
 	return list_s;
 }

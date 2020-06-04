@@ -58,7 +58,7 @@ int** fill_main_matrix(List<place>* list_p)
 					for (int l = 0; l < list_p->at(j).edges_from->size_t(); l++)
 					{
 						buffer_edge = list_p->at(j).edges_from->at(l);
-						if (list_p->at(j).edges_from->at(l).available != 0)
+						if (list_p->at(j).edges_from->at(l).available > 0)
 						{
 							save_pos = find_place_pos(buffer_edge.to->name, list_p);//saving number of node (which current edge directed to)
 							if (matrix[i][save_pos] == 0)
@@ -71,6 +71,9 @@ int** fill_main_matrix(List<place>* list_p)
 				}
 			}
 		}
+		for (int l = 0; l < list_p->size_t(); l++)
+			cout << matrix[i][l] << "    ";
+		cout << endl;
 	}
 
 	return matrix;
