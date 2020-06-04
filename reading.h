@@ -75,7 +75,7 @@ List<place>* read_file(ifstream& input_file)
 			}
 		}
 		input_file >> saving;
-		if (saving >= 0)
+		if (saving <= 0)
 			throw invalid_argument("Incorrect data in file");
 		save1->value.push_back_edge(&save1->value, &save2->value, saving);//pushing edge to lists of edges
 		input_file.get(buf);
