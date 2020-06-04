@@ -39,10 +39,18 @@ List<place>* read_file(ifstream& input_file)
 						}
 						else
 						{
-							if (list_s->Get_Last()->value.name == "T")//if element T (sink) already exist, new element pushing before last element, and sink will be still on last position
+							if (list_s->Get_Last())
 							{
-								list_s->push_pre_back(&new_place);
-								i == 0 ? save1 = list_s->Get_Last()->prev : save2 = list_s->Get_Last()->prev;
+								if (list_s->Get_Last()->value.name == "T")//if element T (sink) already exist, new element pushing before last element, and sink will be still on last position
+								{
+									list_s->push_pre_back(&new_place);
+									i == 0 ? save1 = list_s->Get_Last()->prev : save2 = list_s->Get_Last()->prev;
+								}
+								else
+								{
+									list_s->push_back(&new_place);
+									i == 0 ? save1 = list_s->Get_Last() : save2 = list_s->Get_Last();
+								}
 							}
 							else
 							{
@@ -75,7 +83,7 @@ List<place>* read_file(ifstream& input_file)
 	{
 		find_place_pos("S", list_s);//checking existence of source
 	}
-	catch (invalid_argument exception)
+	catch (out_of_range exception)
 	{
 		throw invalid_argument("In this net doesn't exist source");
 	}
@@ -83,7 +91,7 @@ List<place>* read_file(ifstream& input_file)
 	{
 		find_place_pos("T", list_s);//checking existence of sink
 	}
-	catch (invalid_argument exception)
+	catch (out_of_range exception)
 	{
 		throw invalid_argument("In this net doesn't exist sink");
 	}
